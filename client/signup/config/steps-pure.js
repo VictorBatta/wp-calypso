@@ -773,6 +773,9 @@ export function generateSteps( {
 			providesDependencies: [ 'cartItem' ],
 			apiRequestFunction: addPlanToCart,
 		},
+		courses: {
+			stepName: 'courses',
+		},
 
 		// ↓ importer steps
 		list: {

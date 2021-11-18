@@ -438,7 +438,7 @@ export function generateFlows( {
 		{
 			name: 'setup-site',
 			steps: isEnabled( 'signup/hero-flow' )
-				? [ 'intent', 'site-options', 'starting-point', 'design-setup-site' ]
+				? [ 'intent', 'site-options', 'starting-point', 'courses', 'design-setup-site' ]
 				: [ 'design-setup-site' ],
 			destination: isEnabled( 'signup/hero-flow' )
 				? getDestinationFromIntent
