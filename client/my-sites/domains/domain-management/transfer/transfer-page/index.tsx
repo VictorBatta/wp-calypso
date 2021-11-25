@@ -7,6 +7,7 @@ import { connect } from 'react-redux';
 import ActionCard from 'calypso/components/action-card';
 import CardHeading from 'calypso/components/card-heading';
 import FormattedHeader from 'calypso/components/formatted-header';
+import QueryDomainInfo from 'calypso/components/data/query-domain-info';
 import Main from 'calypso/components/main';
 import BodySectionCssClass from 'calypso/layout/body-section-css-class';
 import { getSelectedDomain, isMappedDomain } from 'calypso/lib/domains';
@@ -39,12 +40,11 @@ const TransferPage = ( props: TransferPageProps ): JSX.Element => {
 	const {
 		currentRoute,
 		isAtomic,
-		isCancelingTransfer,
+		isDomainInfoLoading,
 		isDomainOnly,
-		isLoading,
+		isLockingOrUnlockingDomain,
 		isMapping,
 		isPrimaryDomain,
-		isRequestingTransferCode,
 		lockDomain,
 		locked,
 		requestDomainTransferCodeOnly,
@@ -164,7 +164,7 @@ const TransferPage = ( props: TransferPageProps ): JSX.Element => {
 		// translators: domain transfer lock
 		const enabledLockLabel = __( 'Transfer lock on' );
 
-		const toggleLabel = isLoading ? (
+		const toggleLabel = isDomainInfoLoading ? (
 			'loading'
 		) : (
 			<span className="transfer-page__transfer-lock-label">
@@ -186,7 +186,7 @@ const TransferPage = ( props: TransferPageProps ): JSX.Element => {
 				</CardHeading>
 				<ToggleControl
 					checked={ locked }
-					disabled={ isRequestingTransferCode || isCancelingTransfer }
+					disabled={ isDomainInfoLoading || isLockingOrUnlockingDomain }
 					onChange={ locked ? unlockDomainHandler : lockDomainHandler }
 					label={ toggleLabel }
 				/>
@@ -197,7 +197,7 @@ const TransferPage = ( props: TransferPageProps ): JSX.Element => {
 				</p>
 				<Button
 					primary={ false }
-					busy={ isRequestingTransferCode || isCancelingTransfer }
+					busy={ isLockingOrUnlockingDomain }
 					onClick={ requestTransferCode }
 				>
 					{ __( 'Get authorization code' ) }
@@ -208,6 +208,7 @@ const TransferPage = ( props: TransferPageProps ): JSX.Element => {
 
 	return (
 		<Main className="transfer-page" wideLayout>
+			<QueryDomainInfo domainName={ selectedDomainName } />
 			<BodySectionCssClass bodyClass={ [ 'edit__body-white' ] } />
 			{ renderBreadcrumbs() }
 			<FormattedHeader brandFont headerText={ __( 'Transfer' ) } align="left" />
@@ -223,8 +224,7 @@ const transferPageComponent = connect(
 		const siteId = getSelectedSiteId( state )!;
 		const domainInfo = getDomainWapiInfoByDomainName( state, ownProps.selectedDomainName );
 		return {
-			isLoading: false, // ! domainInfo.hasLoadedFromServer,
-			domain,
+			isDomainInfoLoading: ! domainInfo.hasLoadedFromServer,
 			currentRoute: getCurrentRoute( state ),
 			hasSiteDomainsLoaded: hasLoadedSiteDomains( state, siteId ),
 			isAtomic: isSiteAutomatedTransfer( state, siteId ),
@@ -232,8 +232,7 @@ const transferPageComponent = connect(
 			isMapping: Boolean( domain ) && isMappedDomain( domain ),
 			isPrimaryDomain: isPrimaryDomainBySiteId( state, siteId, ownProps.selectedDomainName ),
 			primaryDomain: getPrimaryDomainBySiteId( state, siteId ),
-			isRequestingTransferCode: !! domainInfo.isRequestingTransferCode,
-			isCancelingTransfer: !! domainInfo.isCancelingTransfer,
+			isLockingOrUnlockingDomain: !! domainInfo.isLockingOrUnlockingDomain,
 			isDomainPendingTransfer: !! domainInfo.data?.pendingTransfer,
 			locked: domainInfo.data?.locked,
 		};
