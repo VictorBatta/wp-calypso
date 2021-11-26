@@ -19,9 +19,8 @@ import {
 	domainManagementTransferToOtherSite,
 } from 'calypso/my-sites/domains/paths';
 import {
-	lockDomain,
-	unlockDomain,
 	requestDomainTransferCodeOnly,
+	toggleDomainLock,
 } from 'calypso/state/domains/transfer/actions';
 import { getDomainWapiInfoByDomainName } from 'calypso/state/domains/transfer/selectors';
 import getCurrentRoute from 'calypso/state/selectors/get-current-route';
@@ -47,11 +46,10 @@ const TransferPage = ( props: TransferPageProps ): JSX.Element => {
 		isMapping,
 		isPrimaryDomain,
 		isRequestingTransferCode,
-		lockDomain,
 		requestDomainTransferCodeOnly,
 		selectedDomainName,
 		selectedSite,
-		unlockDomain,
+		toggleDomainLock,
 	} = props;
 
 	const renderBreadcrumbs = () => {
@@ -137,22 +135,23 @@ const TransferPage = ( props: TransferPageProps ): JSX.Element => {
 		return options.length > 0 ? <Card>{ options }</Card> : null;
 	};
 
-	const unlockDomainHandler = () => {
+	const unlockDomain = () => {
+		const { domainLockingAvailable } = getSelectedDomain( props );
+
 		const options = {
 			siteId: selectedSite.ID,
-			unlock: true,
+			unlock: true && domainLockingAvailable,
 		};
-		unlockDomain( selectedDomainName, options );
+		toggleDomainLock( selectedDomainName, options );
 	};
 
 	// TODO: Should we show a modal if there's a pending transfer and the user locks the domain?
-	const lockDomainHandler = () => {
-		const { domainLockingAvailable } = getSelectedDomain( props );
-
-		lockDomain( selectedDomainName, {
+	const lockDomain = () => {
+		const options = {
 			siteId: selectedSite.ID,
-			lockDomain: domainLockingAvailable,
-		} );
+			unlock: false,
+		};
+		toggleDomainLock( selectedDomainName, options );
 	};
 
 	const requestTransferCode = () => {
@@ -187,7 +186,7 @@ const TransferPage = ( props: TransferPageProps ): JSX.Element => {
 				className="transfer-page__transfer-lock"
 				checked={ isDomainLocked }
 				disabled={ isLockingOrUnlockingDomain }
-				onChange={ isDomainLocked ? unlockDomainHandler : lockDomainHandler }
+				onChange={ isDomainLocked ? unlockDomain : lockDomain }
 				label={ label }
 			/>
 		);
@@ -243,9 +242,8 @@ const transferPageComponent = connect(
 		};
 	},
 	{
-		lockDomain,
 		requestDomainTransferCodeOnly,
-		unlockDomain,
+		toggleDomainLock,
 	}
 )( TransferPage );
 
