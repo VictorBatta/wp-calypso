@@ -3,6 +3,7 @@ import { englishLocales } from '@automattic/i18n-utils';
 import { get, includes, reject } from 'lodash';
 import { addQueryArgs } from 'calypso/lib/url';
 import { generateFlows } from 'calypso/signup/config/flows-pure';
+import { isCurrentUserEmailVerified } from 'calypso/state/current-user/selectors';
 import stepConfig from './steps';
 
 function getCheckoutUrl( dependencies, localeSlug, flowName ) {
@@ -154,14 +155,14 @@ function removeUserStepFromFlow( flow ) {
 	};
 }
 
-function removeP2DetailsStepFromFlow( flow ) {
+function removeP2StepFromFlow( flow, stepName ) {
 	if ( ! flow ) {
 		return;
 	}
 
 	return {
 		...flow,
-		steps: reject( flow.steps, ( stepName ) => stepName === 'p2-details' ),
+		steps: reject( flow.steps, ( s ) => s === stepName ),
 	};
 }
 
@@ -205,8 +206,14 @@ const Flows = {
 			flow = removeUserStepFromFlow( flow );
 		}
 
-		if ( flowName === 'p2' && isUserLoggedIn ) {
-			flow = removeP2DetailsStepFromFlow( flow );
+		if ( flowName === 'p2' || flowName === 'p2-new' ) {
+			if ( isUserLoggedIn ) {
+				flow = removeP2StepFromFlow( flow, 'p2-details' );
+			}
+
+			if ( isUserLoggedIn && isCurrentUserEmailVerified ) {
+				flow = removeP2StepFromFlow( flow, 'p2-confirm-email' );
+			}
 		}
 
 		return Flows.filterExcludedSteps( flow );
