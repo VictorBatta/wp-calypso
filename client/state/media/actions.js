@@ -16,7 +16,6 @@ import {
 	MEDIA_SOURCE_CHANGE,
 	MEDIA_ITEM_UPDATE,
 	MEDIA_ITEM_EDIT,
-	MEDIA_ITEM_DELETE,
 	MEDIA_SET_QUERY,
 	MEDIA_CLEAR_SITE,
 } from 'calypso/state/action-types';
@@ -214,12 +213,6 @@ export function deleteMedia( siteId, mediaIds ) {
 		siteId,
 	};
 }
-
-export const deleteMediaItem = ( siteId, mediaId ) => ( {
-	type: MEDIA_ITEM_DELETE,
-	siteId,
-	mediaId,
-} );
 
 /**
  * Returns an action object used in signalling that the media source for the site has changed.
