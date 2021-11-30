@@ -1,4 +1,3 @@
-export { formatProduct } from './format-product';
 export { getDomain } from './get-domain';
 export * from './get-jetpack-item-term-variants';
 export { getJetpackProductCallToAction } from './get-jetpack-product-call-to-action';
@@ -27,7 +26,6 @@ export { isDomainProduct } from './is-domain-product';
 export { isDomainRedemption } from './is-domain-redemption';
 export { isDomainRegistration } from './is-domain-registration';
 export { isDomainTransfer } from './is-domain-transfer';
-export { isDomainTransferProduct } from './is-domain-transfer-product';
 export { isDotComPlan } from './is-dot-com-plan';
 export { isEcommerce } from './is-ecommerce';
 export { isEnterprise } from './is-enterprise';

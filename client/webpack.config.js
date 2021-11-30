@@ -273,7 +273,6 @@ const webpackConfig = {
 		...SassConfig.plugins( {
 			chunkFilename: cssChunkFilename,
 			filename: cssFilename,
-			minify: ! isDevelopment,
 		} ),
 		new AssetsWriter( {
 			filename: `assets.json`,
@@ -380,6 +379,10 @@ const webpackConfig = {
 				},
 		  }
 		: {} ),
+
+	experiments: {
+		backCompat: false,
+	},
 };
 
 module.exports = webpackConfig;
