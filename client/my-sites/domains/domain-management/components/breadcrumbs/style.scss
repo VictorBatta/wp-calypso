@@ -178,6 +178,10 @@
 .breadcrumbs__buttons-mobile {
 	display: flex;
 
+	> * + * {
+		margin-left: 8px;
+	}
+
 	@include break-mobile {
 		display: none;
 	}
