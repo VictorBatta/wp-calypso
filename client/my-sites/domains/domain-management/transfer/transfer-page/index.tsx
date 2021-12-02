@@ -25,6 +25,7 @@ import {
 	getDomainTransferCodeError,
 	getNoticeOptions,
 } from 'calypso/state/data-layer/wpcom/domains/transfer/notices';
+import { updateDomainLock } from 'calypso/state/domains/transfer/actions';
 import { getDomainWapiInfoByDomainName } from 'calypso/state/domains/transfer/selectors';
 import { successNotice, errorNotice } from 'calypso/state/notices/actions';
 import getCurrentRoute from 'calypso/state/selectors/get-current-route';
@@ -39,7 +40,6 @@ import type { TransferPageProps } from './types';
 import './style.scss';
 
 const TransferPage = ( props: TransferPageProps ): JSX.Element => {
-	const { __ } = useI18n();
 	const {
 		currentRoute,
 		errorNotice,
@@ -52,7 +52,9 @@ const TransferPage = ( props: TransferPageProps ): JSX.Element => {
 		selectedDomainName,
 		selectedSite,
 		successNotice,
+		updateDomainLock,
 	} = props;
+	const { __ } = useI18n();
 	const [ isRequestingTransferCode, setIsRequestingTransferCode ] = useState( false );
 	const [ isLockingOrUnlockingDomain, setIsLockingOrUnlockingDomain ] = useState( false );
 
@@ -139,8 +141,9 @@ const TransferPage = ( props: TransferPageProps ): JSX.Element => {
 		return options.length > 0 ? <Card>{ options }</Card> : null;
 	};
 
-	const updateDomainLock = ( lock: boolean ) => {
+	const toggleDomainLock = () => {
 		setIsLockingOrUnlockingDomain( true );
+		const lock = ! isDomainLocked;
 
 		wpcom.req
 			.post( `/domains/${ selectedDomainName }/transfer/`, {
@@ -149,7 +152,7 @@ const TransferPage = ( props: TransferPageProps ): JSX.Element => {
 				} ),
 			} )
 			.then( () => {
-				// TODO: Update domain object in global store
+				updateDomainLock( selectedDomainName, lock );
 				successNotice(
 					lock ? __( 'Domain locked successfully!' ) : __( 'Domain unlocked successfully!' ),
 					getNoticeOptions( selectedDomainName )
@@ -222,7 +225,7 @@ const TransferPage = ( props: TransferPageProps ): JSX.Element => {
 				className="transfer-page__transfer-lock"
 				checked={ isDomainLocked }
 				disabled={ isLockingOrUnlockingDomain }
-				onChange={ () => updateDomainLock( ! isDomainLocked ) }
+				onChange={ toggleDomainLock }
 				label={ label }
 			/>
 		);
@@ -282,6 +285,7 @@ const transferPageComponent = connect(
 	{
 		errorNotice,
 		successNotice,
+		updateDomainLock,
 	}
 )( TransferPage );
 
