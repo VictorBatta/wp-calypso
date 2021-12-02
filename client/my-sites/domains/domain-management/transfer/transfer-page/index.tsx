@@ -21,7 +21,7 @@ import {
 	domainManagementTransferToOtherSite,
 } from 'calypso/my-sites/domains/paths';
 import {
-	getDomainLockUnlockError,
+	getDomainLockError,
 	getDomainTransferCodeError,
 	getNoticeOptions,
 } from 'calypso/state/data-layer/wpcom/domains/transfer/notices';
@@ -158,7 +158,7 @@ const TransferPage = ( props: TransferPageProps ): JSX.Element => {
 				getNoticeOptions( selectedDomainName )
 			);
 		} catch {
-			errorNotice( getDomainLockUnlockError( lock ), getNoticeOptions( selectedDomainName ) );
+			errorNotice( getDomainLockError( lock ), getNoticeOptions( selectedDomainName ) );
 		} finally {
 			setIsLockingOrUnlockingDomain( false );
 		}
