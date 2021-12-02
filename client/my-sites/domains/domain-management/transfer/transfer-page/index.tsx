@@ -21,10 +21,10 @@ import {
 	domainManagementTransferToOtherSite,
 } from 'calypso/my-sites/domains/paths';
 import {
+	getDomainLockUnlockError,
 	getDomainTransferCodeError,
 	getNoticeOptions,
 } from 'calypso/state/data-layer/wpcom/domains/transfer/notices';
-import { toggleDomainLock } from 'calypso/state/domains/transfer/actions';
 import { getDomainWapiInfoByDomainName } from 'calypso/state/domains/transfer/selectors';
 import { successNotice, errorNotice } from 'calypso/state/notices/actions';
 import getCurrentRoute from 'calypso/state/selectors/get-current-route';
@@ -47,15 +47,14 @@ const TransferPage = ( props: TransferPageProps ): JSX.Element => {
 		isDomainInfoLoading,
 		isDomainLocked,
 		isDomainOnly,
-		isLockingOrUnlockingDomain,
 		isMapping,
 		isPrimaryDomain,
 		selectedDomainName,
 		selectedSite,
 		successNotice,
-		toggleDomainLock,
 	} = props;
 	const [ isRequestingTransferCode, setIsRequestingTransferCode ] = useState( false );
+	const [ isLockingOrUnlockingDomain, setIsLockingOrUnlockingDomain ] = useState( false );
 
 	const renderBreadcrumbs = () => {
 		const items = [
@@ -140,23 +139,27 @@ const TransferPage = ( props: TransferPageProps ): JSX.Element => {
 		return options.length > 0 ? <Card>{ options }</Card> : null;
 	};
 
-	const unlockDomain = () => {
-		const { domainLockingAvailable } = getSelectedDomain( props );
+	const updateDomainLock = ( lock: boolean ) => {
+		setIsLockingOrUnlockingDomain( true );
 
-		const options = {
-			siteId: selectedSite.ID,
-			unlock: true && domainLockingAvailable,
-		};
-		toggleDomainLock( selectedDomainName, options );
-	};
-
-	// TODO: Should we show a modal if there's a pending transfer and the user locks the domain?
-	const lockDomain = () => {
-		const options = {
-			siteId: selectedSite.ID,
-			unlock: false,
-		};
-		toggleDomainLock( selectedDomainName, options );
+		wpcom.req
+			.post( `/domains/${ selectedDomainName }/transfer/`, {
+				domainStatus: JSON.stringify( {
+					command: lock ? 'lock' : 'unlock',
+				} ),
+			} )
+			.then( () => {
+				// TODO: Update domain object in global store
+				successNotice(
+					lock ? __( 'Domain locked successfully!' ) : __( 'Domain unlocked successfully!' ),
+					getNoticeOptions( selectedDomainName )
+				);
+				setIsLockingOrUnlockingDomain( false );
+			} )
+			.catch( () => {
+				errorNotice( getDomainLockUnlockError( lock ), getNoticeOptions( selectedDomainName ) );
+				setIsLockingOrUnlockingDomain( false );
+			} );
 	};
 
 	const requestTransferCode = () => {
@@ -210,12 +213,16 @@ const TransferPage = ( props: TransferPageProps ): JSX.Element => {
 			</span>
 		);
 
+		// TODO: Maybe if this is true, we can disable the domain lock toggle?
+		// const { domainLockingAvailable } = getSelectedDomain( props );
+		// TODO: Should we show a modal if there's a pending transfer and the user tries to lock the domain?
+
 		return (
 			<ToggleControl
 				className="transfer-page__transfer-lock"
 				checked={ isDomainLocked }
 				disabled={ isLockingOrUnlockingDomain }
-				onChange={ isDomainLocked ? unlockDomain : lockDomain }
+				onChange={ () => updateDomainLock( ! isDomainLocked ) }
 				label={ label }
 			/>
 		);
@@ -267,7 +274,6 @@ const transferPageComponent = connect(
 			isDomainLocked: domainInfo.data?.locked,
 			isDomainOnly: isDomainOnlySite( state, siteId ),
 			isDomainPendingTransfer: !! domainInfo.data?.pendingTransfer,
-			isLockingOrUnlockingDomain: !! domainInfo.isLockingOrUnlockingDomain,
 			isMapping: Boolean( domain ) && isMappedDomain( domain ),
 			isPrimaryDomain: isPrimaryDomainBySiteId( state, siteId, ownProps.selectedDomainName ),
 			primaryDomain: getPrimaryDomainBySiteId( state, siteId ),
@@ -275,7 +281,6 @@ const transferPageComponent = connect(
 	},
 	{
 		errorNotice,
-		toggleDomainLock,
 		successNotice,
 	}
 )( TransferPage );
