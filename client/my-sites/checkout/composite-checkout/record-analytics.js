@@ -1,5 +1,4 @@
 import debugFactory from 'debug';
-import { translateCheckoutPaymentMethodToTracksPaymentMethod } from 'calypso/my-sites/checkout/composite-checkout/lib/translate-payment-method-names';
 import { recordTracksEvent } from 'calypso/state/analytics/actions';
 import { logStashEvent, recordCompositeCheckoutErrorDuringAnalytics } from './lib/analytics';
 
@@ -17,35 +16,11 @@ export default function createAnalyticsEventHandler( reduxDispatch ) {
 		try {
 			debug( 'heard checkout event', action );
 			switch ( action.type ) {
-				case 'PAYMENT_METHOD_SELECT': {
-					logStashEvent( 'payment_method_select', {
-						newMethodId: String( action.payload ),
-					} );
-					// Need to convert to the slug format used in old checkout so events are comparable
-					const rawPaymentMethodSlug = String( action.payload );
-					const legacyPaymentMethodSlug = translateCheckoutPaymentMethodToTracksPaymentMethod(
-						rawPaymentMethodSlug
-					);
-					return reduxDispatch(
-						recordTracksEvent( 'calypso_checkout_switch_to_' + legacyPaymentMethodSlug )
-					);
-				}
 				case 'STORED_CARD_ERROR':
 					return reduxDispatch(
 						recordTracksEvent( 'calypso_checkout_composite_stored_card_error', {
 							error_type: action.payload.type,
 							error_message: String( action.payload ),
-						} )
-					);
-				case 'CART_ERROR':
-					logStashEvent( 'calypso_checkout_composite_cart_error', {
-						type: action.payload.type,
-						message: action.payload.message,
-					} );
-					return reduxDispatch(
-						recordTracksEvent( 'calypso_checkout_composite_cart_error', {
-							error_type: action.payload.type,
-							error_message: String( action.payload.message ),
 						} )
 					);
 				case 'a8c_checkout_stripe_field_invalid_error':
@@ -54,12 +29,6 @@ export default function createAnalyticsEventHandler( reduxDispatch ) {
 							error_type: action.payload.type,
 							error_field: action.payload.field,
 							error_message: action.payload.message,
-						} )
-					);
-				case 'a8c_checkout_add_coupon':
-					return reduxDispatch(
-						recordTracksEvent( 'calypso_checkout_composite_coupon_add_submit', {
-							coupon: action.payload.coupon,
 						} )
 					);
 				case 'a8c_checkout_cancel_delete_product':
@@ -76,12 +45,6 @@ export default function createAnalyticsEventHandler( reduxDispatch ) {
 					return reduxDispatch(
 						recordTracksEvent( 'calypso_checkout_composite_delete_product_press', {
 							product_name: action.payload.product_name,
-						} )
-					);
-				case 'a8c_checkout_add_coupon_error':
-					return reduxDispatch(
-						recordTracksEvent( 'calypso_checkout_composite_coupon_add_error', {
-							error_type: action.payload.type,
 						} )
 					);
 				case 'a8c_checkout_add_coupon_button_clicked':
@@ -124,40 +87,6 @@ export default function createAnalyticsEventHandler( reduxDispatch ) {
 						recordTracksEvent( 'calypso_checkout_composite_stripe_submit_clicked', {} )
 					);
 				}
-				case 'FREE_TRANSACTION_BEGIN': {
-					reduxDispatch(
-						recordTracksEvent( 'calypso_checkout_form_submit', {
-							credits: null,
-							payment_method: 'WPCOM_Billing_WPCOM',
-						} )
-					);
-					reduxDispatch(
-						recordTracksEvent( 'calypso_checkout_composite_form_submit', {
-							credits: null,
-							payment_method: 'WPCOM_Billing_WPCOM',
-						} )
-					);
-					return reduxDispatch(
-						recordTracksEvent( 'calypso_checkout_composite_free_purchase_submit_clicked', {} )
-					);
-				}
-				case 'FULL_CREDITS_TRANSACTION_BEGIN': {
-					reduxDispatch(
-						recordTracksEvent( 'calypso_checkout_form_submit', {
-							credits: null,
-							payment_method: 'WPCOM_Billing_WPCOM',
-						} )
-					);
-					reduxDispatch(
-						recordTracksEvent( 'calypso_checkout_composite_form_submit', {
-							credits: null,
-							payment_method: 'WPCOM_Billing_WPCOM',
-						} )
-					);
-					return reduxDispatch(
-						recordTracksEvent( 'calypso_checkout_composite_full_credits_submit_clicked', {} )
-					);
-				}
 				case 'EXISTING_CARD_TRANSACTION_BEGIN': {
 					reduxDispatch(
 						recordTracksEvent( 'calypso_checkout_form_submit', {
@@ -190,25 +119,6 @@ export default function createAnalyticsEventHandler( reduxDispatch ) {
 					);
 					return reduxDispatch(
 						recordTracksEvent( 'calypso_checkout_composite_apple_pay_submit_clicked', {} )
-					);
-				}
-				case 'VALIDATE_DOMAIN_CONTACT_INFO': {
-					// TODO: Decide what to do here
-					return;
-				}
-				case 'SHOW_MODAL_AUTHORIZATION': {
-					return reduxDispatch( recordTracksEvent( 'calypso_checkout_modal_authorization', {} ) );
-				}
-				case 'calypso_checkout_composite_summary_help_click': {
-					return reduxDispatch(
-						recordTracksEvent( 'calypso_checkout_composite_summary_help_click' )
-					);
-				}
-				case 'CART_CHANGE_PLAN_LENGTH': {
-					return reduxDispatch(
-						recordTracksEvent( 'calypso_checkout_composite_plan_length_change', {
-							new_product_slug: action.payload?.newProductSlug,
-						} )
 					);
 				}
 				case 'THANK_YOU_URL_GENERATED':
