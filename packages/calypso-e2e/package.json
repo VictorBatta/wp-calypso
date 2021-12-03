@@ -30,7 +30,7 @@
 		"@types/config": "^0.0.40",
 		"@types/jest": "^27.0.3",
 		"@types/node": "^16.11.10",
-		"@types/node-fetch": "^2.5.12",
+		"@types/node-fetch": "^3.0.2",
 		"@wordpress/i18n": "^4.2.4",
 		"asana-phrase": "^0.0.8",
 		"node-fetch": "^2.6.1",
