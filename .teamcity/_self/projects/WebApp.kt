@@ -541,6 +541,7 @@ fun playwrightPrBuildType( targetDevice: String, buildUuid: String ): BuildType 
 					export PLAYWRIGHT_BROWSERS_PATH=0
 					export TEAMCITY_VERSION=2021
 					export HEADLESS=true
+					export PLAYWRIGHT_NO_LAYOUT_SHIFT_CHECK=1
 
 					# Decrypt config
 					openssl aes-256-cbc -md sha1 -d -in ./config/encrypted.enc -out ./config/local-test.json -k "%CONFIG_E2E_ENCRYPTION_KEY%"
